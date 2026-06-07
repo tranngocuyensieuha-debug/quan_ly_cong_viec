@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+
+# Build/cache output
+.vite/
+.turbo/
+.next/
+.cache/
+.parcel-cache/
+coverage/
+*.tsbuildinfo
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Runtime logs
+*.log
+*.err.log
+app/vite-server*.log
+app/dist/server-run*.log
+app/dist/server-run*.err.log
+
+# Temporary/local runtime files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Local data files
+*.xlsx
+*.xls
+*.csv
+
+# Deployment artifact
+# Do not ignore app/dist/ for now: it is the current deployable bundle.
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+
+# Package manager/cache noise
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.pnpm-store/
