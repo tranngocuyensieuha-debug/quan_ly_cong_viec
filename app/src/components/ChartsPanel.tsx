@@ -20,6 +20,21 @@ interface ChartsPanelProps {
 }
 
 const TEAM_COLORS = ['#2563eb', '#059669'];
+const TASK_COLORS = [
+  '#2563eb',
+  '#059669',
+  '#f59e0b',
+  '#dc2626',
+  '#7c3aed',
+  '#0891b2',
+  '#ea580c',
+  '#16a34a',
+  '#4f46e5',
+  '#be123c',
+  '#0f766e',
+  '#9333ea',
+  '#64748b',
+];
 
 function buildOfficerAssignedData(tasks: Task[]) {
   return USERS.map((user) => {
@@ -62,9 +77,35 @@ function buildTeamAssignedData(tasks: Task[]) {
   });
 }
 
+function buildTeamTaskData(tasks: Task[]) {
+  return TEAMS.map((team) => {
+    const userIds = USERS.filter((user) => user.teamId === team.id).map((user) => user.id);
+    const taskData = tasks
+      .map((task) => {
+        const assigned = task.participants.reduce(
+          (total, participant) => (userIds.includes(participant.userId) ? total + participant.assigned : total),
+          0,
+        );
+
+        return {
+          name: task.title,
+          assigned,
+        };
+      })
+      .filter((task) => task.assigned > 0);
+
+    return {
+      team,
+      total: taskData.reduce((total, task) => total + task.assigned, 0),
+      taskData,
+    };
+  });
+}
+
 export default function ChartsPanel({ tasks }: ChartsPanelProps) {
   const officerAssignedData = buildOfficerAssignedData(tasks);
   const teamAssignedData = buildTeamAssignedData(tasks);
+  const teamTaskData = buildTeamTaskData(tasks);
 
   return (
     <section className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.8fr)]">
@@ -155,6 +196,55 @@ export default function ChartsPanel({ tasks }: ChartsPanelProps) {
               <span className="shrink-0 font-bold text-slate-900">{item.assigned.toLocaleString('vi-VN')}</span>
             </div>
           ))}
+        </div>
+
+        <div className="mt-4 border-t border-slate-100 pt-4">
+          <h4 className="text-sm font-bold text-slate-800">Nhiệm vụ từng tổ</h4>
+          <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+            {teamTaskData.map((teamData) => (
+              <div key={teamData.team.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="min-w-0 text-xs font-extrabold leading-snug text-slate-800">{teamData.team.name}</p>
+                  <span className="shrink-0 rounded-lg bg-white px-2 py-1 text-xs font-extrabold text-slate-700 ring-1 ring-slate-200">
+                    {teamData.total.toLocaleString('vi-VN')}
+                  </span>
+                </div>
+                <ResponsiveContainer width="100%" height={170}>
+                  <PieChart>
+                    <Pie
+                      data={teamData.taskData}
+                      dataKey="assigned"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={42}
+                      outerRadius={68}
+                      paddingAngle={2}
+                    >
+                      {teamData.taskData.map((entry, index) => (
+                        <Cell key={`${teamData.team.id}-${entry.name}`} fill={TASK_COLORS[index % TASK_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => Number(value).toLocaleString('vi-VN')} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-1">
+                  {teamData.taskData.slice(0, 4).map((item, index) => (
+                    <div key={item.name} className="flex items-center justify-between gap-2 text-[11px]">
+                      <span className="flex min-w-0 items-center gap-1.5 font-semibold text-slate-600">
+                        <span
+                          className="h-2 w-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: TASK_COLORS[index % TASK_COLORS.length] }}
+                        />
+                        <span className="truncate">{item.name}</span>
+                      </span>
+                      <span className="shrink-0 font-extrabold text-slate-900">{item.assigned.toLocaleString('vi-VN')}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

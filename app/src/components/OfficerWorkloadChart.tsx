@@ -29,8 +29,9 @@ export default function OfficerWorkloadChart({ tasks }: OfficerWorkloadChartProp
 
     return {
       name: user.name,
-      'Cần thực hiện': assigned,
-      'Đã thực hiện': completed,
+      assigned,
+      completed,
+      remaining: Math.max(0, assigned - completed),
     };
   });
 
@@ -65,6 +66,10 @@ export default function OfficerWorkloadChart({ tasks }: OfficerWorkloadChartProp
                 tickLine={false}
               />
               <Tooltip
+                formatter={(value, name) => [
+                  Number(value).toLocaleString('vi-VN'),
+                  name === 'completed' ? 'Đã rà soát' : 'Còn lại trong tổng phải thực hiện',
+                ]}
                 contentStyle={{
                   borderRadius: '12px',
                   border: '1px solid #e2e8f0',
@@ -80,19 +85,26 @@ export default function OfficerWorkloadChart({ tasks }: OfficerWorkloadChartProp
                 iconSize={8}
                 wrapperStyle={{ fontSize: 11, fontWeight: 700, fill: '#334155', paddingBottom: 16 }}
               />
-              <Bar dataKey="Cần thực hiện" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20}>
+              <Bar dataKey="completed" name="Đã rà soát" stackId="assigned" fill="#10b981" barSize={24}>
                 <LabelList
-                  dataKey="Cần thực hiện"
-                  position="top"
-                  style={{ fill: '#1e293b', fontSize: 9, fontWeight: 700 }}
+                  dataKey="completed"
+                  position="insideTop"
+                  style={{ fill: '#ffffff', fontSize: 9, fontWeight: 700 }}
                   formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN') : '')}
                 />
               </Bar>
-              <Bar dataKey="Đã thực hiện" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20}>
+              <Bar
+                dataKey="remaining"
+                name="Tổng phải thực hiện"
+                stackId="assigned"
+                fill="#3b82f6"
+                radius={[4, 4, 0, 0]}
+                barSize={24}
+              >
                 <LabelList
-                  dataKey="Đã thực hiện"
+                  dataKey="assigned"
                   position="top"
-                  style={{ fill: '#064e3b', fontSize: 9, fontWeight: 700 }}
+                  style={{ fill: '#1e293b', fontSize: 9, fontWeight: 700 }}
                   formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN') : '')}
                 />
               </Bar>

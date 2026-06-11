@@ -12,6 +12,8 @@ const filesToScan = [
   'src/components/TaskCard.tsx',
   'src/components/TaskFormModal.tsx',
   'src/components/ChartsPanel.tsx',
+  'src/components/OfficerWorkloadChart.tsx',
+  'src/components/InitiativeProgressChart.tsx',
   'src/components/SummaryCards.tsx',
   'src/components/RankingPanel.tsx',
   'src/components/ReportExportPanel.tsx',
@@ -26,6 +28,7 @@ const filesToScan = [
 for (const file of filesToScan) {
   assert.equal(existsSync(join(root, file)), true, `Missing file: ${file}`);
 }
+assert.equal(existsSync(join(root, 'public/mau-tong-hop.xlsx')), true, 'Missing summary import template workbook');
 
 const read = (file) => readFileSync(join(root, file), 'utf8');
 const combined = filesToScan.map(read).join('\n');
@@ -34,6 +37,8 @@ const taskBoard = read('src/components/TaskBoard.tsx');
 const taskCard = read('src/components/TaskCard.tsx');
 const taskForm = read('src/components/TaskFormModal.tsx');
 const charts = read('src/components/ChartsPanel.tsx');
+const officerWorkloadChart = read('src/components/OfficerWorkloadChart.tsx');
+const initiativeProgressChart = read('src/components/InitiativeProgressChart.tsx');
 const seed = read('src/data/seed.ts');
 const types = read('src/types/index.ts');
 const importPanel = read('src/components/DataImportPanel.tsx');
@@ -42,24 +47,45 @@ const importData = read('src/utils/importData.ts');
 const reportExport = read('src/utils/reportExport.ts');
 const rankingPanel = read('src/components/RankingPanel.tsx');
 const rankingUtils = read('src/utils/ranking.ts');
+const teamStatsPanel = read('src/components/TeamStatsPanel.tsx');
 
 for (const requiredText of [
   'Excel',
   'Drive',
-  'Cập nhật',
-  'Xuất báo cáo',
   'Phải thực hiện',
   'Đã thực hiện',
-  'Sửa số phải thực hiện',
+  'Sửa số chỉ tiêu giao',
   'So sánh phải thực hiện theo cán bộ',
   'Xanh: đã thực hiện, xám: còn lại',
-  'Đã thực hiện',
   'Còn lại',
   'Tổng phải thực hiện theo tổ',
+  'Bảng quản lý',
+  'Quản lý công việc',
+  'Cán bộ quản lý và địa bàn',
+  'Tên cán bộ quản lý',
+  'Địa bàn xã cũ',
+  'Địa bàn xã mới',
+  'Tổ quản lý',
+  'mau-tong-hop.xlsx',
+  'Tải file Excel mẫu',
+  'xã An Khánh (hết hiệu lực)',
+  'thị trấn Trạm Trôi (hết hiệu lực)',
+  'xã Hoài Đức',
+  'xã Dương Hòa',
+  'Tổ Quản lý hỗ trợ cá nhân hộ kinh doanh số 2',
+  'Chọn địa bàn xã cũ',
+  'Chọn địa bàn xã mới',
+  'CATALOG_STORAGE_KEY',
+  'So sánh 2 tổ',
+  'Tỷ trọng tổng phải thực hiện',
+  'Nhiệm vụ từng tổ',
+  'buildTeamTaskData',
 ]) {
   assert.equal(combined.includes(requiredText), true, `Missing required text: ${requiredText}`);
 }
 
+assert.equal(combined.includes('Bảng điều hành'), false, 'UI must use Bảng quản lý instead of Bảng điều hành');
+assert.equal(combined.includes('Điều hành công việc'), false, 'UI title must use Quản lý công việc instead of Điều hành công việc');
 assert.equal(dashboard.includes('4 cột xử lý'), false, 'Dashboard must not describe 4 Kanban columns');
 assert.equal(taskBoard.includes('STATUS_ORDER'), false, 'Task board must not render status columns');
 assert.equal(taskBoard.includes('TaskColumn'), false, 'Task board must not use TaskColumn');
@@ -74,6 +100,17 @@ assert.equal(charts.includes('dataKey="assigned"'), true, 'Team pie chart must u
 assert.equal(charts.includes('dataKey="completed"'), true, 'Officer chart must show completed quantity');
 assert.equal(charts.includes('dataKey="remaining"'), true, 'Officer chart must show remaining quantity');
 assert.equal(charts.includes('stackId="assigned"'), true, 'Officer chart must stack completed and remaining in one column');
+assert.equal(charts.includes('buildTeamTaskData'), true, 'Charts must build task distribution by team');
+assert.equal(charts.includes('TASK_COLORS'), true, 'Team task pie charts must use task slice colors');
+assert.equal((charts.match(/<PieChart>/g) || []).length >= 2, true, 'Charts panel must include team comparison and team task pie charts');
+assert.equal(officerWorkloadChart.includes('remaining: Math.max(0, assigned - completed)'), true, 'Officer workload chart must calculate remaining quantity');
+assert.equal(officerWorkloadChart.includes('stackId="assigned"'), true, 'Officer workload chart must stack completed and remaining in one column');
+assert.equal(officerWorkloadChart.includes('dataKey="remaining"'), true, 'Officer workload chart must render remaining quantity');
+assert.equal(officerWorkloadChart.includes('dataKey="Cần thực hiện"'), false, 'Officer workload chart must not render assigned as a separate bar');
+assert.equal(initiativeProgressChart.includes('remaining: Math.max(0, assigned - completed)'), true, 'Initiative progress chart must calculate remaining quantity');
+assert.equal(initiativeProgressChart.includes('stackId="assigned"'), true, 'Initiative progress chart must stack completed and remaining in one column');
+assert.equal(initiativeProgressChart.includes('dataKey="remaining"'), true, 'Initiative progress chart must render remaining quantity');
+assert.equal(initiativeProgressChart.includes('dataKey="Tổng chỉ tiêu giao"'), false, 'Initiative progress chart must not render assigned as a separate bar');
 assert.equal(charts.includes('task: task.title'), false, 'Officer chart must not group by task title');
 assert.equal(seed.includes('TASK_TEMPLATES.map'), true, 'Seed tasks must be generated from 13 task templates');
 assert.equal(seed.includes('buildParticipants'), true, 'Each seed task must include all participants');
@@ -91,7 +128,7 @@ assert.equal(taskCard.includes('onUpdateParticipantDeadline'), true, 'Task cards
 assert.equal(taskCard.includes('max={participant.assigned}'), true, 'Completed input must be capped by assigned quantity');
 assert.equal(dashboard.includes('updateParticipantAssigned'), true, 'Dashboard must wire assigned updates');
 assert.equal(importPanel.includes('<svg'), true, 'Import panel must use icons');
-assert.equal(exportPanel.includes('<svg'), true, 'Export panel must use icons');
+assert.equal(exportPanel.includes('<svg'), true, 'Report export panel must use icons');
 assert.equal(importData.includes('parseExcelFile'), true, 'Excel drag/drop parser must exist');
 assert.equal(importData.includes('parseExcelFromUrl'), true, 'Google Drive import parser must exist');
 assert.equal(reportExport.includes('exportTaskReport'), true, 'Excel report export function must exist');
@@ -101,5 +138,8 @@ assert.equal(rankingPanel.includes('TEAMS'), true, 'Ranking table must show offi
 assert.equal(rankingPanel.includes('criterion.name'), true, 'Ranking columns must use full criterion names');
 assert.equal(rankingUtils.includes('calculateOfficerRankings'), true, 'Ranking utility must calculate officer rankings');
 assert.equal(rankingUtils.includes('criterion: 8'), true, 'Ranking must include 8 criteria');
+assert.equal(teamStatsPanel.includes('PieChart'), true, 'Team stats panel must include a pie chart');
+assert.equal(teamStatsPanel.includes('dataKey="assigned"'), true, 'Team comparison pie chart must use assigned totals');
+assert.equal(teamStatsPanel.includes('TEAM_COLORS'), true, 'Team comparison pie chart must use distinct team colors');
 
 console.log('Content verification passed.');

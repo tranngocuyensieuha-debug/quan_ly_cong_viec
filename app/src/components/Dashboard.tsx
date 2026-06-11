@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TEAMS, USERS } from '../data/seed';
 import { useTasks } from '../hooks/useTasks';
 import type { Task, TaskImportRow, TaskStatus } from '../types';
@@ -44,6 +44,42 @@ const NAV_ITEMS: { id: SectionId; label: string; icon: string }[] = [
   { id: 'catalog', label: 'Danh mục', icon: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01' },
   { id: 'settings', label: 'Cài đặt', icon: 'M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5ZM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 .6 1.65 1.65 0 0 0-.4 1.07V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 3.6 15a1.65 1.65 0 0 0-.6-1 1.65 1.65 0 0 0-1.07-.4H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8 3.6a1.65 1.65 0 0 0 1-.6 1.65 1.65 0 0 0 .4-1.07V2a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 3.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 8c.14.36.36.69.6 1 .28.27.66.42 1.07.4H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z' },
 ];
+
+const OLD_AREA_OPTIONS = [
+  'xã An Khánh (hết hiệu lực)',
+  'xã Vân Côn (hết hiệu lực)',
+  'xã Vân Canh (hết hiệu lực)',
+  'xã Sơn Đồng (hết hiệu lực)',
+  'xã Song Phương (hết hiệu lực)',
+  'xã Tiền Yên (hết hiệu lực)',
+  'xã Lại Yên (hết hiệu lực)',
+  'xã La Phù (hết hiệu lực)',
+  'xã Cát Quế (hết hiệu lực)',
+  'xã Đắc Sở (hết hiệu lực)',
+  'thị trấn Trạm Trôi (hết hiệu lực)',
+  'xã Yên Sở (hết hiệu lực)',
+  'xã Di Trạch (hết hiệu lực)',
+  'xã Dương Liễu (hết hiệu lực)',
+  'xã Đức Thượng (hết hiệu lực)',
+  'xã Đức Giang (hết hiệu lực)',
+  'xã Kim Chung (hết hiệu lực)',
+  'xã Minh Khai (hết hiệu lực)',
+  'xã An Thượng (hết hiệu lực)',
+  'xã Đông La (hết hiệu lực)',
+];
+
+const NEW_AREA_OPTIONS = ['xã Hoài Đức', 'xã Sơn Đồng', 'xã An Khánh', 'xã Dương Hòa'];
+const MANAGEMENT_TEAM_OPTIONS = [
+  'Tổ Quản lý hỗ trợ cá nhân hộ kinh doanh số 2',
+  'Tổ Quản lý hỗ trợ cá nhân hộ kinh doanh số 1',
+];
+const CATALOG_STORAGE_KEY = 'tax-dashboard-catalog-selections';
+
+type CatalogSelection = {
+  oldArea: string;
+  newArea: string;
+  teamName: string;
+};
 
 const STATUS_LABELS: Record<WorkDisplayStatus, string> = {
   unprocessed: 'Chưa xử lý',
@@ -403,26 +439,102 @@ function ActivityPanel({ items }: { items: { id: string; time: string; text: str
 }
 
 function CatalogPanel() {
+  const [selections, setSelections] = useState<Record<string, CatalogSelection>>(() => {
+    if (typeof window === 'undefined') return {};
+
+    try {
+      return JSON.parse(window.localStorage.getItem(CATALOG_STORAGE_KEY) ?? '{}') as Record<string, CatalogSelection>;
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(selections));
+  }, [selections]);
+
+  const updateSelection = (userId: string, key: keyof CatalogSelection, value: string) => {
+    setSelections((current) => ({
+      ...current,
+      [userId]: {
+        oldArea: current[userId]?.oldArea ?? '',
+        newArea: current[userId]?.newArea ?? '',
+        teamName: current[userId]?.teamName ?? TEAMS.find((team) => team.id === USERS.find((user) => user.id === userId)?.teamId)?.name ?? '',
+        [key]: value,
+      },
+    }));
+  };
+
+  const catalogRows = USERS.map((user, index) => ({
+    index: index + 1,
+    userId: user.id,
+    userName: user.name,
+    oldArea: selections[user.id]?.oldArea ?? '',
+    newArea: selections[user.id]?.newArea ?? '',
+    teamName: selections[user.id]?.teamName ?? TEAMS.find((team) => team.id === user.teamId)?.name ?? '',
+  }));
+
   return (
     <section className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <SectionTitle eyebrow="Danh mục" title="Cán bộ, tổ và địa bàn" sub="Dữ liệu danh mục đang dùng cho phân công và báo cáo." />
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        {TEAMS.map((team) => {
-          const users = USERS.filter((user) => user.teamId === team.id);
-          return (
-            <div key={team.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="font-extrabold text-slate-900">{team.name}</p>
-              <p className="mt-1 text-xs font-bold text-slate-500">{users.length} cán bộ</p>
-              <div className="mt-3 space-y-2">
-                {users.map((user) => (
-                  <div key={user.id} className="rounded-lg bg-white px-3 py-2 text-sm font-bold text-slate-700">
-                    {user.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+      <SectionTitle eyebrow="Danh mục" title="Cán bộ quản lý và địa bàn" sub="Bảng danh mục dùng cho phân công, theo dõi và báo cáo." />
+      <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+        <table className="w-full min-w-[920px] text-left text-sm">
+          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th className="w-16 px-4 py-3 text-center">STT</th>
+              <th className="px-4 py-3">Tên cán bộ quản lý</th>
+              <th className="px-4 py-3">Địa bàn xã cũ</th>
+              <th className="px-4 py-3">Địa bàn xã mới</th>
+              <th className="px-4 py-3">Tổ quản lý</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 bg-white">
+            {catalogRows.map((row) => (
+              <tr key={row.userName} className="hover:bg-slate-50">
+                <td className="px-4 py-3 text-center font-extrabold text-slate-500">{row.index}</td>
+                <td className="px-4 py-3 font-extrabold text-slate-900">{row.userName}</td>
+                <td className="px-4 py-3">
+                  <select
+                    value={row.oldArea}
+                    onChange={(event) => updateSelection(row.userId, 'oldArea', event.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    aria-label={`Chọn địa bàn xã cũ cho ${row.userName}`}
+                  >
+                    <option value="">Chọn địa bàn xã cũ</option>
+                    {OLD_AREA_OPTIONS.map((area) => (
+                      <option key={area} value={area}>{area}</option>
+                    ))}
+                  </select>
+                </td>
+                <td className="px-4 py-3">
+                  <select
+                    value={row.newArea}
+                    onChange={(event) => updateSelection(row.userId, 'newArea', event.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    aria-label={`Chọn địa bàn xã mới cho ${row.userName}`}
+                  >
+                    <option value="">Chọn địa bàn xã mới</option>
+                    {NEW_AREA_OPTIONS.map((area) => (
+                      <option key={area} value={area}>{area}</option>
+                    ))}
+                  </select>
+                </td>
+                <td className="px-4 py-3">
+                  <select
+                    value={row.teamName}
+                    onChange={(event) => updateSelection(row.userId, 'teamName', event.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    aria-label={`Chọn tổ quản lý cho ${row.userName}`}
+                  >
+                    {MANAGEMENT_TEAM_OPTIONS.map((team) => (
+                      <option key={team} value={team}>{team}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );
@@ -649,9 +761,9 @@ export default function Dashboard() {
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur print:hidden">
           <div className="flex min-h-[72px] flex-col gap-3 px-4 py-3 sm:px-6 xl:flex-row xl:items-center xl:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">Bảng điều hành</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-blue-600">Bảng quản lý</p>
               <h1 className="mt-1 text-xl font-extrabold text-slate-950 sm:text-2xl">
-                Điều hành công việc Tổ Hỗ trợ cá nhân Hộ kinh doanh Thuế cơ sở 23
+                Quản lý công việc Tổ Hỗ trợ cá nhân Hộ kinh doanh Thuế cơ sở 23
               </h1>
               <p className="mt-1 text-sm font-semibold text-slate-500">{activeTitle} - {todayLabel}</p>
             </div>

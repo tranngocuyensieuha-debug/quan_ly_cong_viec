@@ -1,143 +1,343 @@
-[2m10:30:29 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mReceived NaN for the `children` attribute. If this is expected, cast the value to a string.
-[2m10:43:45 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mReferenceError[22m: onDragEnd is not defined
-[39m > TaskCard src/components/TaskCard.tsx:103:17
-    101 |          onDragStart(task.id);
-    102 |        }}
-    103 |        onDragEnd={onDragEnd}
-        |                   ^
-    104 |        className={`group cursor-grab rounded bg-white p-3 shadow-[0_1px_2px_rgba(9,30,66,0.25)] ring-1 ring-slate-200/...
-    105 |          isDragging ? 'opacity-50 ring-2 ring-blue-400' : ''
- > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
- > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
- > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+[2m8:03:37 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <tr> cannot be a child of <optgroup>.
+This will cause a hydration error.
 
-[2m10:43:45 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <TaskCard> component.
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+                    <tbody className="divide-y d...">
+>                     <optgroup className="contents">
+>                       <tr className={"hover:bg-blue-50/40 transition "}>
+                      ...
+        ...
 
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+[2m8:03:37 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <optgroup> cannot be a child of <tbody>.
+This will cause a hydration error.
 
-[2m10:43:45 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mReferenceError[22m: onDragEnd is not defined
-[39m > TaskCard src/components/TaskCard.tsx:103:17
-    101 |          onDragStart(task.id);
-    102 |        }}
-    103 |        onDragEnd={onDragEnd}
-        |                   ^
-    104 |        className={`group cursor-grab rounded bg-white p-3 shadow-[0_1px_2px_rgba(9,30,66,0.25)] ring-1 ring-slate-200/...
-    105 |          isDragging ? 'opacity-50 ring-2 ring-blue-400' : ''
- > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
- > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
- > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+>                   <tbody className="divide-y divide-slate-100 bg-white">
+>                     <optgroup className="contents">
+                      ...
+        ...
 
-[2m10:43:45 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <TaskCard> component.
+[2m8:03:53 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <tr> cannot be a child of <optgroup>.
+This will cause a hydration error.
 
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+                    <tbody className="divide-y d...">
+>                     <optgroup className="contents">
+>                       <tr className={"hover:bg-blue-50/40 transition "}>
+                      ...
+        ...
 
-[2m10:43:53 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mReferenceError[22m: onDragEnd is not defined
-[39m > TaskCard src/components/TaskCard.tsx:102:17
-    100 |          onDragStart(task.id);
-    101 |        }}
-    102 |        onDragEnd={onDragEnd}
-        |                   ^
-    103 |        className={`group cursor-grab rounded bg-white p-3 shadow-[0_1px_2px_rgba(9,30,66,0.25)] ring-1 ring-slate-200/...
-    104 |          isDragging ? 'opacity-50 ring-2 ring-blue-400' : ''
- > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
- > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
- > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+[2m8:03:53 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <optgroup> cannot be a child of <tbody>.
+This will cause a hydration error.
 
-[2m10:43:53 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <TaskCard> component.
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+>                   <tbody className="divide-y divide-slate-100 bg-white">
+>                     <optgroup className="contents">
+                      ...
+        ...
 
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+[2m8:06:26 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <tr> cannot be a child of <optgroup>.
+This will cause a hydration error.
 
-[2m10:43:53 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mReferenceError[22m: onDragEnd is not defined
-[39m > TaskCard src/components/TaskCard.tsx:102:17
-    100 |          onDragStart(task.id);
-    101 |        }}
-    102 |        onDragEnd={onDragEnd}
-        |                   ^
-    103 |        className={`group cursor-grab rounded bg-white p-3 shadow-[0_1px_2px_rgba(9,30,66,0.25)] ring-1 ring-slate-200/...
-    104 |          isDragging ? 'opacity-50 ring-2 ring-blue-400' : ''
- > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
- > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
- > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="officer" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+                    <tbody className="divide-y d...">
+>                     <optgroup className="contents">
+>                       <tr className={"hover:bg-blue-50/40 transition "}>
+                      ...
+        ...
 
-[2m10:43:53 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <TaskCard> component.
+[2m8:06:26 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <optgroup> cannot be a child of <tbody>.
+This will cause a hydration error.
 
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="officer" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+>                   <tbody className="divide-y divide-slate-100 bg-white">
+>                     <optgroup className="contents">
+                      ...
+        ...
 
-[2m10:43:55 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mReferenceError[22m: onDragEnd is not defined
-[39m > TaskCard src/components/TaskCard.tsx:102:17
-    100 |          onDragStart(task.id);
-    101 |        }}
-    102 |        onDragEnd={onDragEnd}
-        |                   ^
-    103 |        className={`group cursor-grab rounded bg-white p-3 shadow-[0_1px_2px_rgba(9,30,66,0.25)] ring-1 ring-slate-200/...
-    104 |          isDragging ? 'opacity-50 ring-2 ring-blue-400' : ''
- > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
- > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
- > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+[2m8:56:08 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <tr> cannot be a child of <optgroup>.
+This will cause a hydration error.
 
-[2m10:43:55 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <TaskCard> component.
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+                    <tbody className="divide-y d...">
+>                     <optgroup className="contents">
+>                       <tr className={"hover:bg-blue-50/40 transition "}>
+                      ...
+        ...
 
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+[2m8:56:08 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <optgroup> cannot be a child of <tbody>.
+This will cause a hydration error.
 
-[2m10:43:58 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mReferenceError[22m: STATUS_LABELS is not defined
-[39m > TaskCard src/components/TaskCard.tsx:230:26
-    228 |            aria-label="Đổi trạng thái công việc"
-    229 |          >
-    230 |            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-        |                            ^
-    231 |              <option key={value} value={value}>
-    232 |                {label}
- > Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
- > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:21
- > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
- > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
- > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:871:29
- > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
- > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:40
- > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
- > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+>                   <tbody className="divide-y divide-slate-100 bg-white">
+>                     <optgroup className="contents">
+                      ...
+        ...
 
-[2m10:43:58 PM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <TaskCard> component.
+[2m8:58:56 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <tr> cannot be a child of <optgroup>.
+This will cause a hydration error.
 
-Consider adding an error boundary to your tree to customize error handling behavior.
-Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+                    <tbody className="divide-y d...">
+>                     <optgroup className="contents">
+>                       <tr className={"hover:bg-blue-50/40 transition "}>
+                      ...
+        ...
 
-[2m10:44:09 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/TaskCard.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
-[2m10:44:51 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Dashboard.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
-[2m10:45:27 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/TaskFormModal.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
-[2m10:46:04 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/ChartsPanel.tsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m8:58:56 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <optgroup> cannot be a child of <tbody>.
+This will cause a hydration error.
+
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+>                   <tbody className="divide-y divide-slate-100 bg-white">
+>                     <optgroup className="contents">
+                      ...
+        ...
+
+[2m9:03:18 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <tr> cannot be a child of <optgroup>.
+This will cause a hydration error.
+
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+                    <tbody className="divide-y d...">
+>                     <optgroup className="contents">
+>                       <tr className={"hover:bg-blue-50/40 transition "}>
+                      ...
+        ...
+
+[2m9:03:18 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <optgroup> cannot be a child of <tbody>.
+This will cause a hydration error.
+
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+>                   <tbody className="divide-y divide-slate-100 bg-white">
+>                     <optgroup className="contents">
+                      ...
+        ...
+
+[2m9:06:03 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <tr> cannot be a child of <optgroup>.
+This will cause a hydration error.
+
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+                    <tbody className="divide-y d...">
+>                     <optgroup className="contents">
+>                       <tr className={"hover:bg-blue-50/40 transition "}>
+                      ...
+        ...
+
+[2m9:06:03 PM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mIn HTML, <optgroup> cannot be a child of <tbody>.
+This will cause a hydration error.
+
+  <App>
+    <Dashboard>
+      <div className="min-h-scre...">
+        <aside>
+        <div className="min-w-0 lg...">
+          <header>
+          <main className="min-w-0 sp...">
+            <div>
+            <section>
+            <section className="rounded-xl...">
+              <div>
+              <div>
+              <WorkTable viewMode="initiative" rows={[...]} officerRows={[...]} expandedRowId={null} ...>
+                <div className="overflow-x...">
+                  <table className="w-full min...">
+                    <thead>
+>                   <tbody className="divide-y divide-slate-100 bg-white">
+>                     <optgroup className="contents">
+                      ...
+        ...
+

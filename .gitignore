@@ -36,6 +36,7 @@ temp/
 *.xlsx
 *.xls
 *.csv
+!app/public/mau-tong-hop.xlsx
 
 # Deployment artifact
 # Do not ignore app/dist/ for now: it is the current deployable bundle.

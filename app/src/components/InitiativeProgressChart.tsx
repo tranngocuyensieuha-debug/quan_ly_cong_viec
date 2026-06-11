@@ -22,8 +22,9 @@ export default function InitiativeProgressChart({ tasks }: InitiativeProgressCha
 
     return {
       name: task.title,
-      'Tổng chỉ tiêu giao': assigned,
-      'Đã hoàn thành': completed,
+      assigned,
+      completed,
+      remaining: Math.max(0, assigned - completed),
     };
   });
 
@@ -58,6 +59,10 @@ export default function InitiativeProgressChart({ tasks }: InitiativeProgressCha
                 tickLine={false}
               />
               <Tooltip
+                formatter={(value, name) => [
+                  Number(value).toLocaleString('vi-VN'),
+                  name === 'completed' ? 'Đã rà soát' : 'Còn lại trong tổng phải thực hiện',
+                ]}
                 contentStyle={{
                   borderRadius: '12px',
                   border: '1px solid #e2e8f0',
@@ -73,19 +78,26 @@ export default function InitiativeProgressChart({ tasks }: InitiativeProgressCha
                 iconSize={8}
                 wrapperStyle={{ fontSize: 11, fontWeight: 700, fill: '#334155', paddingBottom: 16 }}
               />
-              <Bar dataKey="Tổng chỉ tiêu giao" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={16}>
+              <Bar dataKey="completed" name="Đã rà soát" stackId="assigned" fill="#059669" barSize={22}>
                 <LabelList
-                  dataKey="Tổng chỉ tiêu giao"
-                  position="top"
-                  style={{ fill: '#1e293b', fontSize: 9, fontWeight: 700 }}
+                  dataKey="completed"
+                  position="insideTop"
+                  style={{ fill: '#ffffff', fontSize: 9, fontWeight: 700 }}
                   formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN') : '')}
                 />
               </Bar>
-              <Bar dataKey="Đã hoàn thành" fill="#059669" radius={[4, 4, 0, 0]} barSize={16}>
+              <Bar
+                dataKey="remaining"
+                name="Tổng phải thực hiện"
+                stackId="assigned"
+                fill="#6366f1"
+                radius={[4, 4, 0, 0]}
+                barSize={22}
+              >
                 <LabelList
-                  dataKey="Đã hoàn thành"
+                  dataKey="assigned"
                   position="top"
-                  style={{ fill: '#064e3b', fontSize: 9, fontWeight: 700 }}
+                  style={{ fill: '#1e293b', fontSize: 9, fontWeight: 700 }}
                   formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN') : '')}
                 />
               </Bar>
