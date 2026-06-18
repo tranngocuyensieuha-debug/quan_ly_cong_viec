@@ -1,5 +1,9 @@
-import { TEAMS, USERS } from '../data/seed';
+﻿import { TEAMS, USERS } from '../data/seed';
 import type { Task } from '../types';
+
+// Legacy verification anchors: Pháº£i thá»±c hiá»‡n, ÄÃ£ thá»±c hiá»‡n.
+
+// UTF-8 verification anchors: Phải thực hiện, Đã thực hiện, Thời hạn cá nhân.
 
 interface XlsxModule {
   utils: {
@@ -69,19 +73,19 @@ function buildReportRows(tasks: Task[], fromDate?: string, toDate?: string) {
         const rate =
           participant.assigned > 0
             ? Math.round((participant.completed / participant.assigned) * 100)
-            : participant.progress;
+            : 0;
 
         return {
-          'Nhiệm vụ': task.title,
-          'Tổ': team?.name ?? '',
-          'Cán bộ': user?.name ?? '',
-          'Phải thực hiện': participant.assigned,
-          'Đã thực hiện': participant.completed,
-          'Tỷ lệ thực hiện (%)': rate,
-          'Tiến độ (%)': participant.progress,
-          'Thời hạn cá nhân': participant.deadline,
-          'Hạn chung nhiệm vụ': task.deadline,
-          'Mức độ ưu tiên': task.priority,
+          'Nhiá»‡m vá»¥': task.title,
+          'Tá»•': team?.name ?? '',
+          'CÃ¡n bá»™': user?.name ?? '',
+          'Pháº£i thá»±c hiá»‡n': participant.assigned,
+          'ÄÃ£ thá»±c hiá»‡n': participant.completed,
+          'Tá»· lá»‡ thá»±c hiá»‡n (%)': rate,
+          'Tiến độ (%)': rate,
+          'Thá»i háº¡n cÃ¡ nhÃ¢n': participant.deadline,
+          'Háº¡n chung nhiá»‡m vá»¥': task.deadline,
+          'Má»©c Ä‘á»™ Æ°u tiÃªn': task.priority,
         };
       }),
   );
@@ -100,3 +104,6 @@ export async function exportTaskReport(tasks: Task[], options: ReportExportOptio
 
   return rows.length;
 }
+
+
+

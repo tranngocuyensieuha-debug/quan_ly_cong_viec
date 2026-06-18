@@ -20,18 +20,20 @@ export default function OfficerWorkloadChart({ tasks }: OfficerWorkloadChartProp
   const data = USERS.map((user) => {
     const assigned = tasks.reduce((total, task) => {
       const participant = task.participants.find((item) => item.userId === user.id);
-      return total + (participant?.assigned ?? 0);
+      const taskAssigned = task.participants.reduce((sum, item) => sum + item.assigned, 0);
+      return total + (taskAssigned > 0 ? ((participant?.assigned ?? 0) / taskAssigned) * 100 : 0);
     }, 0);
     const completed = tasks.reduce((total, task) => {
       const participant = task.participants.find((item) => item.userId === user.id);
-      return total + (participant?.completed ?? 0);
+      const taskAssigned = task.participants.reduce((sum, item) => sum + item.assigned, 0);
+      return total + (taskAssigned > 0 ? ((participant?.completed ?? 0) / taskAssigned) * 100 : 0);
     }, 0);
 
     return {
       name: user.name,
-      assigned,
-      completed,
-      remaining: Math.max(0, assigned - completed),
+      assigned: Number(assigned.toFixed(2)),
+      completed: Number(completed.toFixed(2)),
+      remaining: Number(Math.max(0, assigned - completed).toFixed(2)),
     };
   });
 
@@ -67,7 +69,7 @@ export default function OfficerWorkloadChart({ tasks }: OfficerWorkloadChartProp
               />
               <Tooltip
                 formatter={(value, name) => [
-                  Number(value).toLocaleString('vi-VN'),
+                  Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 2 }),
                   name === 'completed' ? 'Đã rà soát' : 'Còn lại trong tổng phải thực hiện',
                 ]}
                 contentStyle={{
@@ -90,7 +92,7 @@ export default function OfficerWorkloadChart({ tasks }: OfficerWorkloadChartProp
                   dataKey="completed"
                   position="insideTop"
                   style={{ fill: '#ffffff', fontSize: 9, fontWeight: 700 }}
-                  formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN') : '')}
+                  formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) : '')}
                 />
               </Bar>
               <Bar
@@ -105,7 +107,7 @@ export default function OfficerWorkloadChart({ tasks }: OfficerWorkloadChartProp
                   dataKey="assigned"
                   position="top"
                   style={{ fill: '#1e293b', fontSize: 9, fontWeight: 700 }}
-                  formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN') : '')}
+                  formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) : '')}
                 />
               </Bar>
             </BarChart>

@@ -10,10 +10,9 @@ function clampProgress(value: number): number {
 function normalizeParticipants(task: Task): TaskParticipant[] {
   if (Array.isArray(task.participants) && task.participants.length > 0) {
     return task.participants.map((participant) => {
-      const assigned = Math.max(0, Math.round(participant.assigned ?? 0));
-      const completed = Math.max(0, Math.round(participant.completed ?? participant.progress ?? 0));
-      const progress =
-        assigned > 0 ? clampProgress((completed / assigned) * 100) : clampProgress(participant.progress ?? 0);
+      const assigned = Math.max(0, Number(participant.assigned ?? 0));
+      const completed = Math.max(0, Number(participant.completed ?? participant.progress ?? 0));
+      const progress = assigned > 0 ? clampProgress((completed / assigned) * 100) : 0;
 
       return {
         ...participant,

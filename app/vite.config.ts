@@ -64,7 +64,7 @@ def date_text(value):
 def number(value):
     if value is None or value == '':
         return 0
-    return int(float(value))
+    return round(float(value), 4)
 
 rows = []
 for r in range(3, 17):

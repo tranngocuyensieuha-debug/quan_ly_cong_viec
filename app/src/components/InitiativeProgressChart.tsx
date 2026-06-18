@@ -17,14 +17,16 @@ interface InitiativeProgressChartProps {
 
 export default function InitiativeProgressChart({ tasks }: InitiativeProgressChartProps) {
   const data = tasks.map((task) => {
-    const assigned = task.participants.reduce((sum, p) => sum + p.assigned, 0);
-    const completed = task.participants.reduce((sum, p) => sum + p.completed, 0);
+    const rawAssigned = task.participants.reduce((sum, p) => sum + p.assigned, 0);
+    const rawCompleted = task.participants.reduce((sum, p) => sum + p.completed, 0);
+    const assigned = rawAssigned > 0 ? 100 : 0;
+    const completed = rawAssigned > 0 ? Math.min(100, (rawCompleted / rawAssigned) * 100) : 0;
 
     return {
       name: task.title,
-      assigned,
-      completed,
-      remaining: Math.max(0, assigned - completed),
+      assigned: Number(assigned.toFixed(2)),
+      completed: Number(completed.toFixed(2)),
+      remaining: Number(Math.max(0, assigned - completed).toFixed(2)),
     };
   });
 
@@ -60,7 +62,7 @@ export default function InitiativeProgressChart({ tasks }: InitiativeProgressCha
               />
               <Tooltip
                 formatter={(value, name) => [
-                  Number(value).toLocaleString('vi-VN'),
+                  Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 2 }),
                   name === 'completed' ? 'Đã rà soát' : 'Còn lại trong tổng phải thực hiện',
                 ]}
                 contentStyle={{
@@ -83,7 +85,7 @@ export default function InitiativeProgressChart({ tasks }: InitiativeProgressCha
                   dataKey="completed"
                   position="insideTop"
                   style={{ fill: '#ffffff', fontSize: 9, fontWeight: 700 }}
-                  formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN') : '')}
+                  formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) : '')}
                 />
               </Bar>
               <Bar
@@ -98,7 +100,7 @@ export default function InitiativeProgressChart({ tasks }: InitiativeProgressCha
                   dataKey="assigned"
                   position="top"
                   style={{ fill: '#1e293b', fontSize: 9, fontWeight: 700 }}
-                  formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN') : '')}
+                  formatter={(v: any) => (v > 0 ? Number(v).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) : '')}
                 />
               </Bar>
             </BarChart>

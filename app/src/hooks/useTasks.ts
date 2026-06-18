@@ -8,9 +8,9 @@ function clampProgress(value: number): number {
 }
 
 function normalizeParticipant(participant: TaskParticipant): TaskParticipant {
-  const assigned = Math.max(0, Math.round(participant.assigned));
-  const completed = Math.min(Math.max(0, Math.round(participant.completed)), assigned || participant.completed);
-  const progress = assigned > 0 ? clampProgress((completed / assigned) * 100) : clampProgress(participant.progress);
+  const assigned = Math.max(0, Number(participant.assigned));
+  const completed = Math.min(Math.max(0, Number(participant.completed)), assigned || Number(participant.completed));
+  const progress = assigned > 0 ? clampProgress((completed / assigned) * 100) : 0;
   return { ...participant, assigned, completed, progress };
 }
 
@@ -239,6 +239,25 @@ export function useTasks() {
       }),
     );
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/local-file-du-lieu', { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((rows: TaskImportRow[] | null) => {
+        if (!cancelled && Array.isArray(rows) && rows.length > 0) {
+          importTaskRows(rows);
+        }
+      })
+      .catch(() => {
+        // Local Excel endpoint is optional outside the desktop/dev server.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [importTaskRows]);
 
   const reset = useCallback(() => {
     setTasks(resetData());

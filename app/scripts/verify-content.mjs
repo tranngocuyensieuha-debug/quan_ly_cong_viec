@@ -48,6 +48,8 @@ const reportExport = read('src/utils/reportExport.ts');
 const rankingPanel = read('src/components/RankingPanel.tsx');
 const rankingUtils = read('src/utils/ranking.ts');
 const teamStatsPanel = read('src/components/TeamStatsPanel.tsx');
+const useTasks = read('src/hooks/useTasks.ts');
+const storage = read('src/utils/storage.ts');
 
 for (const requiredText of [
   'Excel',
@@ -73,8 +75,9 @@ for (const requiredText of [
   'xã Hoài Đức',
   'xã Dương Hòa',
   'Tổ Quản lý hỗ trợ cá nhân hộ kinh doanh số 2',
-  'Chọn địa bàn xã cũ',
+  'Chọn 1-3 địa bàn xã cũ',
   'Chọn địa bàn xã mới',
+  'oldAreas',
   'CATALOG_STORAGE_KEY',
   'So sánh 2 tổ',
   'Tỷ trọng tổng phải thực hiện',
@@ -103,11 +106,13 @@ assert.equal(charts.includes('stackId="assigned"'), true, 'Officer chart must st
 assert.equal(charts.includes('buildTeamTaskData'), true, 'Charts must build task distribution by team');
 assert.equal(charts.includes('TASK_COLORS'), true, 'Team task pie charts must use task slice colors');
 assert.equal((charts.match(/<PieChart>/g) || []).length >= 2, true, 'Charts panel must include team comparison and team task pie charts');
-assert.equal(officerWorkloadChart.includes('remaining: Math.max(0, assigned - completed)'), true, 'Officer workload chart must calculate remaining quantity');
+assert.equal(officerWorkloadChart.includes('/ taskAssigned) * 100'), true, 'Officer workload chart must convert each task total to 100');
+assert.equal(officerWorkloadChart.includes('remaining: Number(Math.max(0, assigned - completed).toFixed(2))'), true, 'Officer workload chart must calculate converted remaining quantity');
 assert.equal(officerWorkloadChart.includes('stackId="assigned"'), true, 'Officer workload chart must stack completed and remaining in one column');
 assert.equal(officerWorkloadChart.includes('dataKey="remaining"'), true, 'Officer workload chart must render remaining quantity');
 assert.equal(officerWorkloadChart.includes('dataKey="Cần thực hiện"'), false, 'Officer workload chart must not render assigned as a separate bar');
-assert.equal(initiativeProgressChart.includes('remaining: Math.max(0, assigned - completed)'), true, 'Initiative progress chart must calculate remaining quantity');
+assert.equal(initiativeProgressChart.includes('const assigned = rawAssigned > 0 ? 100 : 0'), true, 'Initiative progress chart must convert each task total to 100');
+assert.equal(initiativeProgressChart.includes('remaining: Number(Math.max(0, assigned - completed).toFixed(2))'), true, 'Initiative progress chart must calculate converted remaining quantity');
 assert.equal(initiativeProgressChart.includes('stackId="assigned"'), true, 'Initiative progress chart must stack completed and remaining in one column');
 assert.equal(initiativeProgressChart.includes('dataKey="remaining"'), true, 'Initiative progress chart must render remaining quantity');
 assert.equal(initiativeProgressChart.includes('dataKey="Tổng chỉ tiêu giao"'), false, 'Initiative progress chart must not render assigned as a separate bar');
@@ -127,6 +132,14 @@ assert.equal(taskCard.includes('onUpdateParticipantCompleted'), true, 'Task card
 assert.equal(taskCard.includes('onUpdateParticipantDeadline'), true, 'Task cards must allow editing participant deadline');
 assert.equal(taskCard.includes('max={participant.assigned}'), true, 'Completed input must be capped by assigned quantity');
 assert.equal(dashboard.includes('updateParticipantAssigned'), true, 'Dashboard must wire assigned updates');
+assert.equal(dashboard.includes('getTaskUnit'), true, 'Dashboard must display task-specific units');
+assert.equal(dashboard.includes('toOfficerScore'), true, 'Officer summary must use converted score for mixed units');
+assert.equal(dashboard.includes('Tá»•ng Ä‘iá»ƒm giao') || dashboard.includes('Tổng điểm giao'), true, 'Officer summary must label converted assigned score');
+assert.equal(dashboard.includes('Chá»‰ tiÃªu giao (Há»™)') || dashboard.includes('Chỉ tiêu giao (Hộ)'), false, 'Officer detail must not hard-code household unit');
+assert.equal(dashboard.includes(': p.progress'), false, 'Officer detail must show 0% when assigned and completed are both 0');
+assert.equal(useTasks.includes('assigned > 0 ? clampProgress((completed / assigned) * 100) : 0'), true, 'Task normalization must not reuse stale progress when assigned is 0');
+assert.equal(storage.includes('assigned > 0 ? clampProgress((completed / assigned) * 100) : 0'), true, 'Stored task normalization must not reuse stale progress when assigned is 0');
+assert.equal(reportExport.includes(': participant.progress'), false, 'Report export must not reuse stale progress when assigned is 0');
 assert.equal(importPanel.includes('<svg'), true, 'Import panel must use icons');
 assert.equal(exportPanel.includes('<svg'), true, 'Report export panel must use icons');
 assert.equal(importData.includes('parseExcelFile'), true, 'Excel drag/drop parser must exist');
@@ -141,5 +154,25 @@ assert.equal(rankingUtils.includes('criterion: 8'), true, 'Ranking must include 
 assert.equal(teamStatsPanel.includes('PieChart'), true, 'Team stats panel must include a pie chart');
 assert.equal(teamStatsPanel.includes('dataKey="assigned"'), true, 'Team comparison pie chart must use assigned totals');
 assert.equal(teamStatsPanel.includes('TEAM_COLORS'), true, 'Team comparison pie chart must use distinct team colors');
+
+const reportsSectionIndex = dashboard.indexOf("{activeSection === 'reports' &&");
+assert.equal(reportsSectionIndex > -1, true, 'Dashboard must include reports section');
+const catalogSectionIndex = dashboard.indexOf("{activeSection === 'catalog' &&", reportsSectionIndex + 1);
+const overviewSectionIndex = dashboard.indexOf("{activeSection === 'overview' &&");
+const workSectionIndex = dashboard.indexOf("{activeSection === 'work' &&", overviewSectionIndex + 1);
+assert.equal(overviewSectionIndex > -1, true, 'Dashboard must include overview section');
+assert.equal(workSectionIndex > -1, true, 'Dashboard must include work section');
+const overviewRankingIndex = dashboard.indexOf('<RankingPanel tasks={tasks} />', overviewSectionIndex);
+const overviewOfficerChartIndex = dashboard.indexOf('<OfficerWorkloadChart tasks={tasks} />', overviewSectionIndex);
+const reportsOfficerChartIndex = dashboard.indexOf('<OfficerWorkloadChart tasks={tasks} />', reportsSectionIndex);
+const reportsInitiativeChartIndex = dashboard.indexOf('<InitiativeProgressChart tasks={tasks} />', reportsSectionIndex);
+const reportsRankingIndex = dashboard.indexOf('<RankingPanel tasks={tasks} />', reportsSectionIndex);
+const reportsChartsPanelIndex = dashboard.indexOf('<ChartsPanel tasks={tasks} />', reportsSectionIndex);
+assert.equal(overviewRankingIndex > -1 && overviewRankingIndex < workSectionIndex, true, 'Overview must show ranking panel after swapping report charts');
+assert.equal(overviewOfficerChartIndex === -1 || overviewOfficerChartIndex > workSectionIndex, true, 'Overview must no longer show officer workload chart after swapping');
+assert.equal(reportsOfficerChartIndex > -1, true, 'Reports must show officer workload chart');
+assert.equal(reportsInitiativeChartIndex > -1, true, 'Reports must show initiative progress chart');
+assert.equal(reportsRankingIndex, -1, 'Reports must no longer show ranking panel after swapping');
+assert.equal(reportsChartsPanelIndex === -1 || reportsChartsPanelIndex > catalogSectionIndex, true, 'Reports must not render duplicate ChartsPanel');
 
 console.log('Content verification passed.');

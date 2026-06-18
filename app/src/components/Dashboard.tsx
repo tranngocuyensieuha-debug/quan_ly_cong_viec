@@ -3,6 +3,7 @@ import { TEAMS, USERS } from '../data/seed';
 import { useTasks } from '../hooks/useTasks';
 import type { Task, TaskImportRow, TaskStatus } from '../types';
 import { formatDate, getDaysRemaining, getDeadlineStatus } from '../utils/deadline';
+import { calculateOfficerRankings } from '../utils/ranking';
 import ChartsPanel from './ChartsPanel';
 import DataImportPanel from './DataImportPanel';
 import RankingPanel from './RankingPanel';
@@ -76,7 +77,7 @@ const MANAGEMENT_TEAM_OPTIONS = [
 const CATALOG_STORAGE_KEY = 'tax-dashboard-catalog-selections';
 
 type CatalogSelection = {
-  oldArea: string;
+  oldAreas: string[];
   newArea: string;
   teamName: string;
 };
@@ -146,6 +147,29 @@ function getTeamName(userId: string) {
   return TEAMS.find((team) => team.id === user?.teamId)?.name ?? 'Chưa xác định';
 }
 
+function getTaskUnit(taskTitle: string) {
+  if (taskTitle === 'Số thu' || taskTitle === 'Nộp thuế điện tử' || taskTitle === 'Nợ thuế') {
+    return 'đồng';
+  }
+  if (taskTitle === 'Cưỡng chế xuất nhập cảnh') return 'người';
+  if (taskTitle === 'Cưỡng chế tài khoản hóa đơn') return 'trường hợp';
+  if (taskTitle === 'Hệ số K') return 'dòng';
+  if (taskTitle === 'Thủ tục hành chính') return 'hồ sơ';
+  return 'HKD';
+}
+
+function formatQuantity(value: number, unit?: string) {
+  const formatted = value.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+  return unit ? `${formatted} ${unit}` : formatted;
+}
+
+function toOfficerScore(task: Task, userId: string, field: 'assigned' | 'completed') {
+  const taskAssigned = task.participants.reduce((sum, participant) => sum + participant.assigned, 0);
+  const participant = task.participants.find((item) => item.userId === userId);
+  if (!participant || taskAssigned <= 0) return 0;
+  return (participant[field] / taskAssigned) * 100;
+}
+
 function buildRows(tasks: Task[]): WorkRow[] {
   return tasks.map((task, index) => {
     const officer = getPrimaryOfficer(task);
@@ -174,8 +198,8 @@ function buildOfficerProgressRows(tasks: Task[]) {
       const participant = task.participants.find((item) => item.userId === user.id);
       if (!participant) return;
 
-      assigned += participant.assigned;
-      completed += participant.completed;
+      assigned += toOfficerScore(task, user.id, 'assigned');
+      completed += toOfficerScore(task, user.id, 'completed');
       if (participant.progress < 100 && getDeadlineStatus(participant.deadline) === 'overdue') overdue += 1;
     });
 
@@ -443,7 +467,21 @@ function CatalogPanel() {
     if (typeof window === 'undefined') return {};
 
     try {
-      return JSON.parse(window.localStorage.getItem(CATALOG_STORAGE_KEY) ?? '{}') as Record<string, CatalogSelection>;
+      const stored = JSON.parse(window.localStorage.getItem(CATALOG_STORAGE_KEY) ?? '{}') as Record<
+        string,
+        CatalogSelection & { oldArea?: string }
+      >;
+
+      return Object.fromEntries(
+        Object.entries(stored).map(([userId, value]) => [
+          userId,
+          {
+            oldAreas: value.oldAreas ?? (value.oldArea ? [value.oldArea] : []),
+            newArea: value.newArea ?? '',
+            teamName: value.teamName ?? '',
+          },
+        ]),
+      );
     } catch {
       return {};
     }
@@ -457,7 +495,7 @@ function CatalogPanel() {
     setSelections((current) => ({
       ...current,
       [userId]: {
-        oldArea: current[userId]?.oldArea ?? '',
+        oldAreas: current[userId]?.oldAreas ?? [],
         newArea: current[userId]?.newArea ?? '',
         teamName: current[userId]?.teamName ?? TEAMS.find((team) => team.id === USERS.find((user) => user.id === userId)?.teamId)?.name ?? '',
         [key]: value,
@@ -465,11 +503,31 @@ function CatalogPanel() {
     }));
   };
 
+  const toggleOldArea = (userId: string, area: string) => {
+    setSelections((current) => {
+      const currentAreas = current[userId]?.oldAreas ?? [];
+      const oldAreas = currentAreas.includes(area)
+        ? currentAreas.filter((item) => item !== area)
+        : currentAreas.length >= 3
+          ? currentAreas
+        : [...currentAreas, area];
+
+      return {
+        ...current,
+        [userId]: {
+          oldAreas,
+          newArea: current[userId]?.newArea ?? '',
+          teamName: current[userId]?.teamName ?? TEAMS.find((team) => team.id === USERS.find((user) => user.id === userId)?.teamId)?.name ?? '',
+        },
+      };
+    });
+  };
+
   const catalogRows = USERS.map((user, index) => ({
     index: index + 1,
     userId: user.id,
     userName: user.name,
-    oldArea: selections[user.id]?.oldArea ?? '',
+    oldAreas: selections[user.id]?.oldAreas ?? [],
     newArea: selections[user.id]?.newArea ?? '',
     teamName: selections[user.id]?.teamName ?? TEAMS.find((team) => team.id === user.teamId)?.name ?? '',
   }));
@@ -494,17 +552,43 @@ function CatalogPanel() {
                 <td className="px-4 py-3 text-center font-extrabold text-slate-500">{row.index}</td>
                 <td className="px-4 py-3 font-extrabold text-slate-900">{row.userName}</td>
                 <td className="px-4 py-3">
-                  <select
-                    value={row.oldArea}
-                    onChange={(event) => updateSelection(row.userId, 'oldArea', event.target.value)}
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                    aria-label={`Chọn địa bàn xã cũ cho ${row.userName}`}
-                  >
-                    <option value="">Chọn địa bàn xã cũ</option>
-                    {OLD_AREA_OPTIONS.map((area) => (
-                      <option key={area} value={area}>{area}</option>
-                    ))}
-                  </select>
+                  <details className="group relative">
+                    <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-700 outline-none transition hover:bg-slate-50 group-open:border-blue-500 group-open:ring-2 group-open:ring-blue-100">
+                      <span className="min-w-0 truncate">
+                        {row.oldAreas.length > 0 ? `${row.oldAreas.length} xã cũ đã chọn` : 'Chọn 1-3 địa bàn xã cũ'}
+                      </span>
+                      <span className="shrink-0 text-slate-400">▾</span>
+                    </summary>
+                    <div className="absolute z-20 mt-2 max-h-72 w-[360px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+                      {OLD_AREA_OPTIONS.map((area) => (
+                        <label key={area} className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                          <input
+                            type="checkbox"
+                            checked={row.oldAreas.includes(area)}
+                            disabled={!row.oldAreas.includes(area) && row.oldAreas.length >= 3}
+                            onChange={() => toggleOldArea(row.userId, area)}
+                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span>{area}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </details>
+                  {row.oldAreas.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {row.oldAreas.map((area) => (
+                        <button
+                          key={area}
+                          type="button"
+                          onClick={() => toggleOldArea(row.userId, area)}
+                          className="rounded-full bg-blue-50 px-2 py-1 text-[11px] font-bold text-blue-700 ring-1 ring-blue-100"
+                          title="Bỏ chọn địa bàn này"
+                        >
+                          {area} ×
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <select
@@ -603,6 +687,7 @@ export default function Dashboard() {
   }, [dateFrom, dateTo, officerFilter, queryName, queryTaxCode, rows, statusFilter]);
 
   const officerProgressRows = useMemo(() => buildOfficerProgressRows(tasks), [tasks]);
+  const quickRankings = useMemo(() => calculateOfficerRankings(tasks, USERS).slice(0, 4), [tasks]);
 
   const officerRows = useMemo(() => {
     return USERS.map((user, index) => {
@@ -614,8 +699,8 @@ export default function Dashboard() {
       const officerTasks = tasks.filter((task) => {
         const p = task.participants.find((p) => p.userId === user.id);
         if (p) {
-          assigned += p.assigned;
-          completed += p.completed;
+          assigned += toOfficerScore(task, user.id, 'assigned');
+          completed += toOfficerScore(task, user.id, 'completed');
           taskCount += 1;
           if (p.progress < 100 && getDeadlineStatus(p.deadline) === 'overdue') {
             overdueCount += 1;
@@ -864,7 +949,7 @@ export default function Dashboard() {
                       {/* Bảng ghi nhận thi đua cán bộ */}
                       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                         <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-2">
-                          Ghi nhận thi đua Tổ Thuế
+                          Ghi nhận thi đua theo tổng các nhiệm vụ
                         </h4>
                         <div className="mt-3 grid gap-3 sm:grid-cols-2">
                           <div className="rounded-lg bg-emerald-50/70 p-3 border border-emerald-100 flex flex-col justify-between">
@@ -889,13 +974,13 @@ export default function Dashboard() {
                       {/* Tóm tắt thi đua nhanh */}
                       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm flex-1">
                         <h4 className="text-xs font-extrabold text-slate-600 uppercase tracking-wider border-b border-slate-100 pb-2 mb-2">
-                          Xếp hạng thi đua nhanh
+                          Xếp hạng thi đua cán bộ theo 8 tiêu chí của phòng CNTK
                         </h4>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                          {officerProgressRows.slice(0, 4).map((item, idx) => (
-                            <div key={item.user.id} className="flex justify-between items-center text-xs font-semibold text-slate-600">
-                              <span className="truncate">#{idx+1} {item.user.name}</span>
-                              <span className="text-slate-900 font-bold shrink-0">{item.rate}%</span>
+                          {quickRankings.map((item) => (
+                            <div key={item.userId} className="flex justify-between items-center text-xs font-semibold text-slate-600">
+                              <span className="truncate">#{item.rank} {item.userName}</span>
+                              <span className="text-slate-900 font-bold shrink-0">{item.totalScore}</span>
                             </div>
                           ))}
                         </div>
@@ -905,10 +990,7 @@ export default function Dashboard() {
                 </section>
 
                 {/* Hai biểu đồ phân tích khối lượng cột kép xếp chồng */}
-                <div className="space-y-5">
-                  <OfficerWorkloadChart tasks={tasks} />
-                  <InitiativeProgressChart tasks={tasks} />
-                </div>
+                <RankingPanel tasks={tasks} />
 
                 <PriorityWorkPanel rows={alertRows} onOpenWork={() => setActiveSection('work')} />
               </div>
@@ -1021,10 +1103,8 @@ export default function Dashboard() {
             <section className="min-w-0 space-y-5">
               <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_420px] print:grid-cols-1">
                 <div className="min-w-0 space-y-5">
-                  <RankingPanel tasks={tasks} />
-                  <div className="print:hidden">
-                    <ChartsPanel tasks={tasks} />
-                  </div>
+                  <OfficerWorkloadChart tasks={tasks} />
+                  <InitiativeProgressChart tasks={tasks} />
                 </div>
                 <div className="min-w-0 space-y-5">
                   <TeamStatsPanel tasks={tasks} />
@@ -1195,8 +1275,8 @@ function WorkTable({
               <th className="px-4 py-3">Cán bộ quản lý</th>
               <th className="px-4 py-3">Tổ công tác</th>
               <th className="px-4 py-3 text-right">Số chuyên đề</th>
-              <th className="px-4 py-3 text-right">Tổng chỉ tiêu giao</th>
-              <th className="px-4 py-3 text-right">Đã hoàn thành</th>
+              <th className="px-4 py-3 text-right">Tổng điểm giao</th>
+              <th className="px-4 py-3 text-right">Điểm hoàn thành</th>
               <th className="px-4 py-3 text-right">Tỷ lệ đạt</th>
               <th className="px-4 py-3 text-right print:hidden">Thao tác</th>
             </tr>
@@ -1214,8 +1294,8 @@ function WorkTable({
                     </td>
                     <td className="px-4 py-4 font-bold text-slate-700">{getTeamName(row.user.id)}</td>
                     <td className="px-4 py-4 text-right font-bold text-slate-800">{row.taskCount} chuyên đề</td>
-                    <td className="px-4 py-4 text-right font-extrabold text-blue-700">{row.assigned.toLocaleString('vi-VN')} HKD</td>
-                    <td className="px-4 py-4 text-right font-extrabold text-emerald-700">{row.completed.toLocaleString('vi-VN')} HKD</td>
+                    <td className="px-4 py-4 text-right font-extrabold text-blue-700">{formatQuantity(row.assigned, 'điểm')}</td>
+                    <td className="px-4 py-4 text-right font-extrabold text-emerald-700">{formatQuantity(row.completed, 'điểm')}</td>
                     <td className="px-4 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <span className="font-extrabold text-slate-800">{row.rate}%</span>
@@ -1252,8 +1332,8 @@ function WorkTable({
                             <thead className="bg-slate-50 font-bold text-slate-600">
                               <tr>
                                 <th className="px-3 py-2">Chuyên đề nghiệp vụ</th>
-                                <th className="px-3 py-2 text-right">Chỉ tiêu giao (Hộ)</th>
-                                <th className="px-3 py-2 text-right">Đã hoàn thành (Hộ)</th>
+                                <th className="px-3 py-2 text-right">Chỉ tiêu giao</th>
+                                <th className="px-3 py-2 text-right">Đã hoàn thành</th>
                                 <th className="px-3 py-2 text-right">Tỷ lệ đạt</th>
                                 <th className="px-3 py-2">Thời hạn hoàn thành</th>
                               </tr>
@@ -1261,7 +1341,8 @@ function WorkTable({
                             <tbody className="divide-y divide-slate-100">
                               {row.tasks.map((task: Task) => {
                                 const p = task.participants.find((item) => item.userId === row.user.id)!;
-                                const rate = p.assigned > 0 ? Math.round((p.completed / p.assigned) * 100) : p.progress;
+                                const rate = p.assigned > 0 ? Math.round((p.completed / p.assigned) * 100) : 0;
+                                const unit = getTaskUnit(task.title);
                                 return (
                                   <tr key={task.id} className="hover:bg-slate-50/80">
                                     <td className="px-3 py-2">
@@ -1269,23 +1350,29 @@ function WorkTable({
                                       <p className="text-[10px] text-slate-400 max-w-[400px] truncate">{task.description}</p>
                                     </td>
                                     <td className="px-3 py-2 text-right">
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        value={p.assigned}
-                                        onChange={(e) => onUpdateParticipantAssigned(task.id, row.user.id, Number(e.target.value))}
-                                        className="w-16 rounded border border-slate-200 bg-white px-2 py-1 text-right font-bold text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100"
-                                      />
+                                      <div className="flex items-center justify-end gap-2">
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          value={p.assigned}
+                                          onChange={(e) => onUpdateParticipantAssigned(task.id, row.user.id, Number(e.target.value))}
+                                          className="w-24 rounded border border-slate-200 bg-white px-2 py-1 text-right font-bold text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100"
+                                        />
+                                        <span className="w-16 text-left text-[10px] font-bold text-slate-500">{unit}</span>
+                                      </div>
                                     </td>
                                     <td className="px-3 py-2 text-right">
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max={p.assigned}
-                                        value={p.completed}
-                                        onChange={(e) => onUpdateParticipantCompleted(task.id, row.user.id, Number(e.target.value))}
-                                        className="w-16 rounded border border-slate-200 bg-white px-2 py-1 text-right font-bold text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100"
-                                      />
+                                      <div className="flex items-center justify-end gap-2">
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          max={p.assigned}
+                                          value={p.completed}
+                                          onChange={(e) => onUpdateParticipantCompleted(task.id, row.user.id, Number(e.target.value))}
+                                          className="w-24 rounded border border-slate-200 bg-white px-2 py-1 text-right font-bold text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100"
+                                        />
+                                        <span className="w-16 text-left text-[10px] font-bold text-slate-500">{unit}</span>
+                                      </div>
                                     </td>
                                     <td className="px-3 py-2 text-right">
                                       <div className="flex items-center justify-end gap-2">
@@ -1436,8 +1523,8 @@ function WorkTable({
                             <thead className="bg-slate-50 font-bold text-slate-600">
                               <tr>
                                 <th className="px-3 py-2">Cán bộ</th>
-                                <th className="px-3 py-2 text-right">Chỉ tiêu giao (Hộ)</th>
-                                <th className="px-3 py-2 text-right">Đã hoàn thành (Hộ)</th>
+                                <th className="px-3 py-2 text-right">Chỉ tiêu giao</th>
+                                <th className="px-3 py-2 text-right">Đã hoàn thành</th>
                                 <th className="px-3 py-2 text-right">Tỷ lệ đạt</th>
                                 <th className="px-3 py-2">Thời hạn xử lý cá nhân</th>
                               </tr>
@@ -1445,7 +1532,8 @@ function WorkTable({
                             <tbody className="divide-y divide-slate-100">
                               {row.task.participants.map((p) => {
                                 const user = USERS.find((item) => item.id === p.userId);
-                                const rate = p.assigned > 0 ? Math.round((p.completed / p.assigned) * 100) : p.progress;
+                                const rate = p.assigned > 0 ? Math.round((p.completed / p.assigned) * 100) : 0;
+                                const unit = getTaskUnit(row.task.title);
                                 return (
                                   <tr key={p.userId} className="hover:bg-slate-50/80">
                                     <td className="px-3 py-2">
@@ -1453,23 +1541,29 @@ function WorkTable({
                                       <p className="text-[10px] text-slate-400 font-semibold">{getTeamName(p.userId)}</p>
                                     </td>
                                     <td className="px-3 py-2 text-right">
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        value={p.assigned}
-                                        onChange={(e) => onUpdateParticipantAssigned(row.task.id, p.userId, Number(e.target.value))}
-                                        className="w-16 rounded border border-slate-200 bg-white px-2 py-1 text-right font-bold text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100"
-                                      />
+                                      <div className="flex items-center justify-end gap-2">
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          value={p.assigned}
+                                          onChange={(e) => onUpdateParticipantAssigned(row.task.id, p.userId, Number(e.target.value))}
+                                          className="w-24 rounded border border-slate-200 bg-white px-2 py-1 text-right font-bold text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100"
+                                        />
+                                        <span className="w-16 text-left text-[10px] font-bold text-slate-500">{unit}</span>
+                                      </div>
                                     </td>
                                     <td className="px-3 py-2 text-right">
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        max={p.assigned}
-                                        value={p.completed}
-                                        onChange={(e) => onUpdateParticipantCompleted(row.task.id, p.userId, Number(e.target.value))}
-                                        className="w-16 rounded border border-slate-200 bg-white px-2 py-1 text-right font-bold text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100"
-                                      />
+                                      <div className="flex items-center justify-end gap-2">
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          max={p.assigned}
+                                          value={p.completed}
+                                          onChange={(e) => onUpdateParticipantCompleted(row.task.id, p.userId, Number(e.target.value))}
+                                          className="w-24 rounded border border-slate-200 bg-white px-2 py-1 text-right font-bold text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100"
+                                        />
+                                        <span className="w-16 text-left text-[10px] font-bold text-slate-500">{unit}</span>
+                                      </div>
                                     </td>
                                     <td className="px-3 py-2 text-right">
                                       <div className="flex items-center justify-end gap-2">
